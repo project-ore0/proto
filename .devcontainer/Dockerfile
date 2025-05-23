@@ -1,38 +1,39 @@
-FROM mcr.microsoft.com/devcontainers/base:ubuntu
+ARG USERNAME=vscode
+ARG USER_UID=1000
+ARG USER_GID=1000
 
-# Add nanopb C sources to a known path (for future use)
-ENV NANOPB_PATH=/opt/nanopb
+FROM alpine:3.21
 
+RUN echo "USERNAME: $USERNAME" \
+    && echo "USER_UID: $USER_UID" \
+    && echo "USER_GID: $USER_GID"
+
+ARG USERNAME
+ARG USER_UID
+ARG USER_GID
 # Install tools
-RUN apt-get update && apt-get install -y \
+RUN apk add --no-cache \
     git \
     curl \
     cmake \
-    build-essential \
-    protobuf-compiler \
+    build-base \
+    inotify-tools \
+    protobuf \
     python3 \
-    python3-pip \
+    py3-pip \
+    py3-protobuf \
+    py3-grpcio \
     nodejs \
-    npm \
-    && rm -rf /var/lib/apt/lists/*
+    npm
 
 # Install TypeScript generator
-RUN npm install -g protoc-gen-ts
-
-# Clone nanopb and build the plugin
-RUN git clone --depth 1 https://github.com/nanopb/nanopb.git "${NANOPB_PATH}" \
-    && cd "${NANOPB_PATH}/generator/protoc-gen-nanopb" \
-    && cmake . \
-    && make \
-    && cp protoc-gen-nanopb /usr/local/bin/
+RUN npm install -g google-protobuf protoc-gen-ts
 
 # Create non-root user
-ARG USERNAME=vscode
-ARG USER_UID=1000
-ARG USER_GID=$USER_UID
+RUN addgroup -g $USER_GID $USERNAME \
+    && adduser -D -u $USER_UID -G $USERNAME $USERNAME
 
-RUN groupadd --gid $USER_GID $USERNAME \
-    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
-    && apt-get clean
+# Set the working directory
+WORKDIR /workspace
 
 USER $USERNAME

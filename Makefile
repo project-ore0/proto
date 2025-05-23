@@ -1,5 +1,9 @@
+.PHONY: all clean c ts
+
 # Include the nanopb provided Makefile rules
 include nanopb/extra/nanopb.mk
+
+PROTOC_GEN_TS = /usr/local/bin/protoc-gen-ts
 
 # Compiler flags to enable all warnings & debug info
 CFLAGS = -Wall -Werror -g -O0
@@ -21,9 +25,15 @@ $(GENC_DIR)/%.pb.c: %.proto | $(GENC_DIR)
 c: $(GENC_SRCS)
 
 GENTS_DIR := generated/ts
-GENTS_SRCS := $(patsubst %.proto,$(GENC_DIR)/%.pb.ts,$(PROTO_SRCS))
+GENTS_SRCS := $(patsubst %.proto,$(GENTS_DIR)/%.pb.ts,$(PROTO_SRCS))
 $(GENTS_DIR):
 	mkdir -p $(GENTS_DIR)
+$(GENTS_DIR)/%.pb.ts: %.proto | $(GENTS_DIR)
+	$(PROTOC) $(PROTOC_OPTS) --plugin=protoc-gen-ts=$(PROTOC_GEN_TS) --ts_out=$(GENTS_DIR) $<
+
+ts: $(GENTS_SRCS)
+
+all: $(GENC_SRCS) $(GENTS_SRCS)
 
 clean:
 	rm -fr generated/*

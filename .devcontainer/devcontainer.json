@@ -1,9 +1,11 @@
 {
-  "name": "Proto Generator",
-  "build": {
-    "dockerfile": "Dockerfile",
-    "context": ".."
-  },
+  "name": "ORE0 Proto Generator",
+  "initializeCommand": ".devcontainer/init.sh",
+  "dockerComposeFile": [
+    "docker-compose.yml"
+  ],
+  "service": "app",
+  "workspaceFolder": "/workspace",
   "customizations": {
     "vscode": {
       "extensions": [
@@ -13,9 +15,8 @@
       ]
     }
   },
-  "postCreateCommand": "bash .devcontainer/setup.sh",
-  "remoteUser": "vscode",
+  "postCreateCommand": "sh .devcontainer/setup.sh",
   "mounts": [
-    "source=${localWorkspaceFolder}/generated,target=/workspace/generated,type=bind"
+    "source=${localWorkspaceFolder},target=/workspace,type=bind"
   ]
 }
