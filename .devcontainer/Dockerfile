@@ -13,6 +13,7 @@ ARG USER_UID
 ARG USER_GID
 # Install tools
 RUN apk add --no-cache \
+    bash \
     git \
     curl \
     cmake \
@@ -37,3 +38,5 @@ RUN addgroup -g $USER_GID $USERNAME \
 WORKDIR /workspace
 
 USER $USERNAME
+
+ENTRYPOINT [ "bash" ]
