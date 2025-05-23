@@ -16,16 +16,6 @@ GENERATED_DIR := generated
 GENC_DIR := $(GENERATED_DIR)/c
 GENTS_DIR := $(GENERATED_DIR)/ts
 
-# Enable verbose output if V=1 is set
-V ?= 0
-ifeq ($(V),1)
-  Q :=
-  E := @true
-else
-  Q := @
-  E := @echo
-endif
-
 # Compiler flags to enable all warnings & debug info
 CFLAGS := -Wall -Werror -g -O0
 CFLAGS += -I$(NANOPB_DIR)
@@ -61,31 +51,29 @@ $(GENC_DIR) $(GENTS_DIR):
 
 # Generate C code from proto files
 $(GENC_DIR)/%.pb.c $(GENC_DIR)/%.pb.h: $(PROTO_DIR)/%.proto | $(GENC_DIR)
-	$(E) "  PROTOC  $<"
-	$(Q)$(PROTOC) $(PROTOC_OPTS) --nanopb_out=$(GENC_DIR) --proto_path=$(PROTO_DIR) $<
+	$(PROTOC) $(PROTOC_OPTS) --nanopb_out=$(GENC_DIR) --proto_path=$(PROTO_DIR) $<
 
 # C code generation target
 c: $(GENC_SRCS) $(GENC_HDRS)
-	$(E) "C code generation complete"
+	@echo "C code generation complete"
 
 # Generate TypeScript code from proto files
 $(GENTS_DIR)/%.ts: $(PROTO_DIR)/%.proto | $(GENTS_DIR)
-	$(E) "  TS-GEN  $<"
-	$(Q)if [ ! -x "$(PROTOC_GEN_TS)" ]; then \
+	@if [ ! -x "$(PROTOC_GEN_TS)" ]; then \
 		echo "Error: TypeScript plugin ($(PROTOC_GEN_TS)) not found or not executable"; \
 		echo "Please install it with: npm install -g protoc-gen-ts"; \
 		exit 1; \
 	fi
-	$(Q)$(PROTOC) $(PROTOC_OPTS) --plugin=protoc-gen-ts=$(PROTOC_GEN_TS) --ts_out=$(GENTS_DIR) --proto_path=$(PROTO_DIR) $<
+	$(PROTOC) $(PROTOC_OPTS) --plugin=protoc-gen-ts=$(PROTOC_GEN_TS) --ts_out=$(GENTS_DIR) --proto_path=$(PROTO_DIR) $<
 
 # TypeScript code generation target
 ts: $(GENTS_SRCS)
-	$(E) "TypeScript code generation complete"
+	@echo "TypeScript code generation complete"
 
 # Clean generated files
 clean:
-	$(E) "  CLEAN   $(GENERATED_DIR)"
-	$(Q)rm -rf $(GENERATED_DIR)/*
+	@echo "Cleaning generated files"
+	@rm -rf $(GENERATED_DIR)/*
 
 # Help target
 help:
@@ -99,12 +87,10 @@ help:
 	@echo "  help      - Display this help message"
 	@echo ""
 	@echo "Options:"
-	@echo "  V=1       - Enable verbose output"
 	@echo "  -j N      - Run N parallel jobs (default: auto)"
 	@echo ""
 	@echo "Example usage:"
 	@echo "  make              # Generate all code"
-	@echo "  make V=1          # Generate all code with verbose output"
 	@echo "  make clean        # Remove all generated files"
 	@echo "  make c            # Generate C code only"
 	@echo "  make ts           # Generate TypeScript code only"
