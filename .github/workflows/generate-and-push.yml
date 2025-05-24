@@ -2,6 +2,7 @@ name: Generate and Push Protocol Buffers Code
 
 permissions:
   contents: write
+  packages: write
   id-token: write
 
 on:
