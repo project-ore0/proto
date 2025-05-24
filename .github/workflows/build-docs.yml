@@ -71,8 +71,8 @@ jobs:
           
           # Add and commit changes
           git add docs/
-          git commit -m "${COMMIT_MSG}" || echo "No changes to commit"
           git clean -fd
+          git commit -m "${COMMIT_MSG}" || echo "No changes to commit"
           
           # Push to docs branch with token authentication
           git push "https://github.com/${GITHUB_REPOSITORY}.git" docs
