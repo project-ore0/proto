@@ -41,11 +41,10 @@ jobs:
       
       - name: Build PlantUML diagrams
         run: |
-          mkdir -p docs/images
           for puml_file in docs/*.puml; do
             base_name=$(basename "$puml_file" .puml)
             echo "Converting $base_name to PNG..."
-            plantuml -tpng -o docs "$puml_file"
+            plantuml -tpng -o . "$puml_file"
           done
       
       - name: Create or update docs branch
