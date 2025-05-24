@@ -58,6 +58,9 @@ jobs:
           # Get the current commit hash for versioning
           COMMIT_HASH=$(git rev-parse --short HEAD)
           git checkout --orphan generated-$COMMIT_HASH
+
+          # Copy nanopb library files
+          cp nanopb/pb/pb.h nanopb/pb/pb_*.h nanopb/pb/pb_*.c generated/c/
           
           # Remove everything
           git rm -rf --cached .
@@ -67,6 +70,9 @@ jobs:
           
           # Commit the generated files
           git commit -m "Generated files from commit $COMMIT_HASH"
+
+          # CLean up any untracked files
+          git clean -fd
           
           # Push to the new branch with token authentication
           git push "https://github.com/${GITHUB_REPOSITORY}.git" generated-$COMMIT_HASH --force

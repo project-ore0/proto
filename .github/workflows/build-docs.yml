@@ -58,12 +58,12 @@ jobs:
           if git ls-remote --heads origin docs | grep docs; then
             # Branch exists, check it out
             git fetch origin docs
-            git checkout docs
+            git checkout -- docs
             
             COMMIT_MSG="Update documentation images from commit $COMMIT_HASH"
           else
             # Branch doesn't exist, create it
-            git checkout --orphan docs
+            git checkout --orphan -- docs
             # Remove everything
             git rm -rf --cached .
 
