@@ -18,7 +18,7 @@
   },
   "postCreateCommand": "sh .devcontainer/setup.sh",
   "mounts": [
-    "source=${localEnv:HOME}${localEnv:USERPROFILE}/.ssh,target=/home/${localEnv:USERPROFILE}/.ssh,readonly,type=bind,consistency=cache",
+    "source=${localEnv:HOME}${localEnv:USER}/.ssh,target=/home/${localEnv:USER}/.ssh,readonly,type=bind,consistency=cache",
     "source=${localWorkspaceFolder},target=/workspace,type=bind"
   ]
 }
