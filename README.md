@@ -22,6 +22,17 @@ A separate workflow automatically builds documentation:
 3. Converts all PlantUML diagrams to PNG images
 4. Pushes the generated images to the `docs` branch
 
+### Required Permissions
+
+For these workflows to function properly, the GitHub Actions workflow needs write permissions to the repository. You can configure this in your repository settings:
+
+1. Go to your repository on GitHub
+2. Click on "Settings" > "Actions" > "General"
+3. Under "Workflow permissions", select "Read and write permissions"
+4. Click "Save"
+
+This allows the workflows to push to the `generated`, `generated-<commit_hash>`, and `docs` branches.
+
 To manually trigger either workflow:
 1. Go to the GitHub repository
 2. Click on the "Actions" tab
