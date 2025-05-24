@@ -2,6 +2,10 @@
 
 This project provides a development environment for generating Protocol Buffer files for both C (using nanopb) and TypeScript.
 
+## Docs
+
+[Sequence Diagram](https://raw.githubusercontent.com/project-ore0/proto/refs/heads/docs/flow.png)
+
 ## Automated Generation
 
 ### Protocol Buffer Generation
