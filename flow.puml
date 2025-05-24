@@ -1,0 +1,118 @@
+@startuml
+
+participant "Vehicle" as vehicle
+box "WebSocket Server"
+participant "Server" as server
+end box
+participant "Player" as player
+
+== Player Registration ==
+player -> server: player.JoinRequest
+note right: token, name, location
+server -> player: player.JoinResponse
+note left: assigned_id, assigned_role
+server -> player: player.JoinBroadcast
+note left: player, timestamp
+
+== Vehicle Registration ==
+vehicle -> server: vehicle.JoinRequest
+note right: token, type, name, location, capabilities
+server -> vehicle: vehicle.JoinResponse
+note left: assigned_id, assigned_tag, error
+server -> player: player.VehicleConnectedBroadcast
+note left: vehicle, timestamp
+
+== Player Listing ==
+player -> server: player.ListPlayerRequest
+note right: role, name, location, page, limit
+server -> player: player.ListPlayerResponse
+note left: players[], total, page, limit, next_page, prev_page
+
+== Vehicle Listing ==
+player -> server: player.ListVehiclesRequest
+note right: type, name, location, tag, acquired, page, limit
+server -> player: player.ListVehiclesResponse
+note left: vehicles[], total, page, limit, next_page, prev_page, error
+
+== Chat System ==
+player -> server: player.ChatRequest
+note right: message
+server -> player: player.ChatResponse
+note left: error
+server -> player: player.ChatBroadcast
+note left: player_id, message, timestamp
+
+== Vehicle Acquisition ==
+player -> server: player.AcquireRequest
+note right: vehicle_id
+server -> player: player.AcquireResponse
+note left: vehicle_id, success, error
+server -> player: player.AcquireBroadcast
+note left: vehicle_id, player
+
+server -> vehicle: vehicle.AcquireRequest
+note left: player_id
+vehicle -> server: vehicle.AcquireResponse
+note right: player_id, success, error
+
+== Sensor Data Flow ==
+server -> vehicle: vehicle.SensorRequest
+vehicle -> server: vehicle.SensorResponse
+note right: timestamp, sensors[], error
+server -> player: player.VehicleStateBroadcast
+note left: vehicle_id, timestamp, sensors[], motors[]
+
+== Camera Control ==
+player -> server: player.MoveControlRequest
+note right: vehicle_id, type
+server -> player: player.MoveControlResponse
+note left: motors[], error
+
+server -> vehicle: vehicle.CameraStateRequest
+note left: enabled
+vehicle -> server: vehicle.CameraStateResponse
+note right: enabled, error
+
+server -> vehicle: vehicle.CameraSnapRequest
+vehicle -> server: vehicle.CameraSnapResponse
+note right: timestamp, frame, error
+server -> player: player.VehicleCameraBroadcast
+note left: vehicle_id, timestamp, frame
+
+== Motor Control ==
+server -> vehicle: vehicle.MotorStateRequest
+note left: motors[]
+vehicle -> server: vehicle.MotorStateResponse
+note right: motors[], error
+
+== Vehicle Release ==
+player -> server: player.ReleaseRequest
+note right: vehicle_id
+server -> player: player.ReleaseResponse
+note left: vehicle_id, error
+server -> player: player.ReleaseBroadcast
+note left: vehicle_id, player
+
+server -> vehicle: vehicle.ReleaseRequest
+vehicle -> server: vehicle.ReleaseResponse
+note right: player_id, error
+
+== Disconnection ==
+player -> server: disconnect
+note right: Implicit or explicit disconnect
+server -> player: player.LeaveBroadcast
+note left: player_id, timestamp
+
+vehicle -> server: disconnect
+note right: Implicit or explicit disconnect
+server -> player: player.VehicleDisconnectedBroadcast
+note left: vehicle_id, timestamp
+
+== Ping ==
+player -> server: PingRequest
+server -> player: PingResponse
+
+vehicle -> server: PingRequest
+server -> vehicle: PingResponse
+
+@enduml
