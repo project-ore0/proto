@@ -26,60 +26,49 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v3
         with:
           fetch-depth: 0  # Fetch all history for proper branch creation
           submodules: 'recursive'  # Checkout submodules recursively
       
-      - name: Set up Git user
+      - name: Config
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
       
-      - name: Pre-build dev container image
+      - name: Pre-build image
         uses: devcontainers/ci@v0.3
         with:
           imageName: ghcr.io/project-ore0/proto-ci
           cacheFrom: ghcr.io/project-ore0/proto-ci
           push: always
       
+      - name: Branch
+        run: |
+          git fetch origin generated || echo "No remote generated branch yet"
+          if git show-ref --quiet refs/heads/generated; then
+            git checkout generated
+          else
+            git checkout -b generated
+          fi
+      
       # Use the devcontainer to generate the Protocol Buffer code
-      - name: Generate Protocol Buffer code in devcontainer
+      - name: Generate
         uses: devcontainers/ci@v0.3
         with:
           cacheFrom: ghcr.io/project-ore0/proto-ci
           push: never
           runCmd: |
             make clean && make all
+            cp nanopb/pb/pb.h nanopb/pb/pb_*.h nanopb/pb/pb_*.c generated/c/
       
-      - name: Create and push generated branch
+      - name: Commit
         run: |
-          # Get the current commit hash for versioning
-          COMMIT_HASH=$(git rev-parse --short HEAD)
-          git checkout --orphan generated-$COMMIT_HASH
-
-          # Copy nanopb library files
-          cp nanopb/pb/pb.h nanopb/pb/pb_*.h nanopb/pb/pb_*.c generated/c/
-          
-          # Remove everything
-          git rm -rf --cached .
-          
-          # Add only the generated files
           git add --force generated/
-          
-          # Commit the generated files
-          git commit -m "Generated files from commit $COMMIT_HASH"
-
-          # CLean up any untracked files
-          git clean -fd
-          
-          # Push to the new branch with token authentication
-          git push "https://github.com/${GITHUB_REPOSITORY}.git" generated-$COMMIT_HASH --force
-          
-          # Also update the 'generated' branch to always point to the latest
-          git branch -f generated generated-$COMMIT_HASH
-          git push "https://github.com/${GITHUB_REPOSITORY}.git" generated --force
-          
-          # Return to the original branch
-          git checkout -
+          git commit -m "Update generated files from ${{ github.sha }}" || echo "No changes to commit"
+      
+      - name: Push
+        run: |
+          git subtree split --prefix=generated -b temp-generated-branch
+          git push --force origin temp-generated-branch:generated

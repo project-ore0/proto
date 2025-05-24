@@ -24,12 +24,12 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: Checkout repository
+      - name: Checkout
         uses: actions/checkout@v3
         with:
           fetch-depth: 0  # Fetch all history for proper branch creation
       
-      - name: Set up Git user
+      - name: Config
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
@@ -39,7 +39,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y plantuml
       
-      - name: Create and switch to docs branch if it doesn't exist
+      - name: Branch
         run: |
           git fetch origin docs || echo "No remote docs branch yet"
           if git show-ref --quiet refs/heads/docs; then
@@ -48,7 +48,7 @@ jobs:
             git checkout -b docs
           fi
       
-      - name: Build PlantUML diagrams
+      - name: Build
         run: |
           for puml_file in docs/*.puml; do
             base_name=$(basename "$puml_file" .puml)
@@ -56,12 +56,12 @@ jobs:
             plantuml -tpng -o . "$puml_file"
           done
       
-      - name: Commit any changes to docs/ folder
+      - name: Commit
         run: |
           git add docs/
           git commit -m "Update docs from ${{ github.sha }}" || echo "No changes to commit"
 
-      - name: Push docs folder to docs branch
+      - name: Push
         run: |
           git subtree split --prefix=docs -b temp-docs-branch
           git push --force origin temp-docs-branch:docs
