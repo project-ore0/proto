@@ -9,7 +9,7 @@ on:
     branches:
       - main  # Change this if your default branch has a different name
     paths:
-      - 'doc/**/*.puml'  # Only run when PlantUML files change
+      - 'docs/**/*.puml'  # Only run when PlantUML files change
   
   # Allow manual triggering of the workflow
   workflow_dispatch:
@@ -41,11 +41,11 @@ jobs:
       
       - name: Build PlantUML diagrams
         run: |
-          mkdir -p doc/images
-          for puml_file in doc/*.puml; do
+          mkdir -p docs/images
+          for puml_file in docs/*.puml; do
             base_name=$(basename "$puml_file" .puml)
-            echo "Converting $puml_file to PNG..."
-            plantuml -tpng -o images "$puml_file"
+            echo "Converting $base_name to PNG..."
+            plantuml -tpng -o docs "$puml_file"
           done
       
       - name: Create or update docs branch
@@ -70,14 +70,10 @@ jobs:
             COMMIT_MSG="Initial documentation images from commit $COMMIT_HASH"
           fi
           
-            
-          # Copy the generated images
-          mkdir -p images
-          cp -r doc/images/* images/
-          
           # Add and commit changes
-          git add images/
+          git add docs/
           git commit -m "${COMMIT_MSG}" || echo "No changes to commit"
+          git clean -fd
           
           # Push to docs branch with token authentication
           git push "https://github.com/${GITHUB_REPOSITORY}.git" docs
