@@ -11,11 +11,11 @@ RUN echo "USERNAME: $USERNAME" \
 ARG USERNAME
 ARG USER_UID
 ARG USER_GID
-# Install tools
+
+ # Install system dependencies
 RUN apk add --no-cache \
     bash \
-    ssh \
-    telnet \
+    openssh-client \
     git \
     curl \
     cmake \
