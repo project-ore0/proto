@@ -14,6 +14,8 @@ ARG USER_GID
 # Install tools
 RUN apk add --no-cache \
     bash \
+    ssh \
+    telnet \
     git \
     curl \
     cmake \
