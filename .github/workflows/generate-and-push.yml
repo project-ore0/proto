@@ -61,7 +61,7 @@ jobs:
           push: never
           runCmd: |
             make clean && make all
-            cp nanopb/pb/pb.h nanopb/pb/pb_*.h nanopb/pb/pb_*.c generated/c/
+            cp nanopb/pb.h nanopb/pb_*.h nanopb/pb_*.c generated/c/
       
       - name: Commit
         run: |
