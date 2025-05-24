@@ -39,6 +39,15 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y plantuml
       
+      - name: Create and switch to docs branch if it doesn't exist
+        run: |
+          git fetch origin docs || echo "No remote docs branch yet"
+          if git show-ref --quiet refs/heads/docs; then
+            git checkout docs
+          else
+            git checkout -b docs
+          fi
+      
       - name: Build PlantUML diagrams
         run: |
           for puml_file in docs/*.puml; do
@@ -47,35 +56,12 @@ jobs:
             plantuml -tpng -o . "$puml_file"
           done
       
-      - name: Create or update docs branch
+      - name: Commit any changes to docs/ folder
         run: |
-          # Get the current commit hash for versioning
-          COMMIT_HASH=$(git rev-parse --short HEAD)
-          COMMIT_MSG="Automated documentation build from commit $COMMIT_HASH"
-          
-          # Check if docs branch exists
-          if git ls-remote --heads origin docs | grep docs; then
-            # Branch exists, check it out
-            git fetch origin docs
-            git checkout -- docs
-            
-            COMMIT_MSG="Update documentation images from commit $COMMIT_HASH"
-          else
-            # Branch doesn't exist, create it
-            git checkout --orphan -- docs
-            # Remove everything
-            git rm -rf --cached .
-
-            COMMIT_MSG="Initial documentation images from commit $COMMIT_HASH"
-          fi
-          
-          # Add and commit changes
           git add docs/
-          git clean -fd
-          git commit -m "${COMMIT_MSG}" || echo "No changes to commit"
-          
-          # Push to docs branch with token authentication
-          git push "https://github.com/${GITHUB_REPOSITORY}.git" docs
-          
-          # Return to the original branch
-          git checkout -
+          git commit -m "Update docs from ${{ github.sha }}" || echo "No changes to commit"
+
+      - name: Push docs folder to docs branch
+        run: |
+          git subtree split --prefix=docs -b temp-docs-branch
+          git push --force origin temp-docs-branch:docs
