@@ -1,0 +1,84 @@
+syntax = "proto3";
+
+package vehicle;
+
+import "common.proto";
+
+message Capabalities {
+  repeated SensorType sensors = 1;
+  bool camera = 2;
+  bool microphone = 3;
+  bool speaker = 4;
+}
+
+message JoinRequest {
+  string token = 1;
+  VehicleType type = 2;
+  string name = 3;
+  string location = 4;
+  Capabalities capabilities = 5;
+}
+
+message JoinResponse {
+  uint32 assigned_id = 1;
+  string assigned_tag = 2;
+  ErrorCode error = 3;
+}
+
+
+message SensorRequest { }
+
+message SensorResponse {
+  uint64 timestamp = 1;
+  repeated SensorReading sensors = 2;
+  ErrorCode error = 3;
+}
+
+
+message AcquireRequest {
+  string player_id = 1;
+}
+
+message AcquireResponse {
+  string player_id = 1;
+  bool success = 2;
+  ErrorCode error = 3;
+}
+
+
+message ReleaseRequest {
+}
+
+message ReleaseResponse {
+  string player_id = 1;
+  ErrorCode error = 2;
+}
+
+
+message CameraSnapRequest {
+}
+
+message CameraSnapResponse {
+  uint64 timestamp = 1;
+  CameraFrame frame = 2;
+  ErrorCode error = 3;
+}
+
+
+message CameraStateRequest {
+  bool enabled = 1;
+}
+
+message CameraStateResponse {
+  bool enabled = 1;
+  ErrorCode error = 2;
+}
+
+message MotorStateRequest {
+  repeated MotorStateMessage motors = 1;
+}
+
+message MotorStateResponse {
+  repeated MotorStateMessage motors = 1;
+  ErrorCode error = 2;
+}

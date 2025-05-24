@@ -11,7 +11,8 @@
       "extensions": [
         "ms-vscode.cpptools",
         "zxh404.vscode-proto3",
-        "esbenp.prettier-vscode"
+        "esbenp.prettier-vscode",
+        "jebbs.plantuml"
       ]
     }
   },

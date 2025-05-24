@@ -1,0 +1,18 @@
+#!/bin/bash
+
+echo "Running pre-push hook"
+
+# Save the current directory
+REPO_ROOT=$(git rev-parse --show-toplevel)
+cd "$REPO_ROOT" || (echo "Error: Unable to change directory to repository root" > &2; exit 1)
+
+# Run make clean && make
+make clean && make
+MAKE_RESULT=$?
+if [ $MAKE_RESULT -ne 0 ]; then
+    echo "Error: 'make clean && make' failed with exit code $MAKE_RESULT" > &2
+    exit 1
+fi
+
+echo "Generated files in sync with definitions."
+exit 0

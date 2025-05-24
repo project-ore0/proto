@@ -1,0 +1,134 @@
+syntax = "proto3";
+
+enum ErrorCode {
+  ERROR_OK = 0;
+  ERROR_INTERNAL = 1;
+  ERROR_TIMEOUT = 2;
+  ERROR_NOT_FOUND = 3;
+  ERROR_DENIED = 4;
+  ERROR_TEMPORARY = 5;
+  ERROR_LOST = 6;
+  ERROR_TOO_LONG = 7;
+  ERROR_INVALID_TOKEN = 8;
+  ERROR_INVALID_REQUEST = 9;
+  ERROR_INVALIG_ARGS = 10;
+  ERROR_ACQUIRE_LIMIT = 11;
+  ERROR_NO_CAPABILITY = 12;
+  ERROR_MOTOR_HALTED = 13;
+}
+
+enum PlayerRole {
+  PLAYER_ROLE_UNKNOWN = 0;
+  PLAYER_ROLE_ADMIN = 1;
+  PLAYER_ROLE_USER = 2;
+}
+
+message Player {
+  string id = 1;
+  PlayerRole role = 2;
+  string name = 3;
+  string location = 4;
+}
+
+enum VehicleType {
+  VEHICLE_UNKNOWN = 0;
+  VEHICLE_ORE0 = 1;
+}
+
+message Vehicle {
+  string id = 1;
+  VehicleType type = 2;
+  string name = 3;
+  string location = 4;
+  string tag = 5;
+}
+
+enum SensorType {
+  SENSOR_UNKNOWN = 0;
+  SENSOR_BATTERY = 1;
+  SENSOR_DISTANCE = 2;
+  SENSOR_CONTACT = 3;
+  SENSOR_POSITION = 4;
+}
+
+enum SensorDistanceType {
+  SENSOR_DISTANCE_UNKNOWN = 0;
+  SENSOR_DISTANCE_FRONT = 1;
+  SENSOR_DISTANCE_BACK = 2;
+}
+
+enum SensorContactType {
+  SENSOR_CONTACT_UNKNOWN = 0;
+  SENSOR_CONTACT_FRONT_LEFT = 1;
+  SENSOR_CONTACT_FRONT_RIGHT = 2;
+  SENSOR_CONTACT_BACK_LEFT = 3;
+  SENSOR_CONTACT_BACK_RIGHT = 4;
+}
+
+message SensorBatteryReading {
+  uint32 value = 1;
+  uint32 est_remaining_sec = 2;
+}
+
+message SensorDistanceReading {
+  SensorDistanceType type = 1;
+  uint32 value = 2;
+}
+
+message SensorContactReading {
+  SensorContactType type = 1;
+  bool value = 2;
+}
+
+message SensorPositionReading {
+  float latitude = 1;
+  float longitude = 2;
+  float altitude = 3;
+  float accuracy = 4;
+  float speed = 5;
+  float bearing = 6;
+}
+
+message SensorReading {
+  uint64 timestamp = 1;
+  oneof data {
+    SensorBatteryReading battery = 2;
+    SensorDistanceReading distance = 3;
+    SensorContactReading contact = 4;
+    SensorPositionReading position = 5;
+  }
+}
+
+enum CameraFrameType {
+  CAMERA_FRAME_UNKNOWN = 0;
+  CAMERA_FRAME_RAW = 1;
+  CAMERA_FRAME_JPEG = 2;
+}
+
+message CameraFrame {
+  CameraFrameType type = 1;
+  bytes data = 2;
+}
+
+enum MotorType {
+  MOTOR_UNKNOWN = 0;
+  MOTOR_LEFT = 1;
+  MOTOR_RIGHT = 2;
+}
+
+enum MotorDirection {
+  MOTOR_DIRECTION_UNKNOWN = 0;
+  MOTOR_DIRECTION_IDLE = 1;
+  MOTOR_DIRECTION_FORWARD = 2;
+  MOTOR_DIRECTION_BACKWARD = 3;
+  MOTOR_DIRECTION_BRAKE = 4;
+}
+
+message MotorStateMessage {
+  MotorType type = 1;
+  MotorDirection direction = 2;
+}
+
+
+message PingRequest {}
+message PingResponse {}

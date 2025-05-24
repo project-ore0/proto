@@ -1,0 +1,82 @@
+name: Build Documentation
+
+on:
+  push:
+    branches:
+      - main  # Change this if your default branch has a different name
+    paths:
+      - 'doc/**/*.puml'  # Only run when PlantUML files change
+  
+  # Allow manual triggering of the workflow
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for manual trigger'
+        required: false
+        default: 'Manual documentation build'
+
+jobs:
+  build-and-push-docs:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Fetch all history for proper branch creation
+      
+      - name: Set up Git user
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+      
+      - name: Install PlantUML
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y plantuml
+      
+      - name: Build PlantUML diagrams
+        run: |
+          mkdir -p doc/images
+          for puml_file in doc/*.puml; do
+            base_name=$(basename "$puml_file" .puml)
+            echo "Converting $puml_file to PNG..."
+            plantuml -tpng -o images "$puml_file"
+          done
+      
+      - name: Create or update docs branch
+        run: |
+          # Get the current commit hash for versioning
+          COMMIT_HASH=$(git rev-parse --short HEAD)
+          COMMIT_MSG="Automated documentation build from commit $COMMIT_HASH"
+          
+          # Check if docs branch exists
+          if git ls-remote --heads origin docs | grep docs; then
+            # Branch exists, check it out
+            git fetch origin docs
+            git checkout docs
+            
+            COMMIT_MSG="Update documentation images from commit $COMMIT_HASH"
+          else
+            # Branch doesn't exist, create it
+            git checkout --orphan docs
+            # Remove everything
+            git rm -rf --cached .
+
+            COMMIT_MSG="Initial documentation images from commit $COMMIT_HASH"
+          fi
+          
+            
+          # Copy the generated images
+          mkdir -p images
+          cp -r doc/images/* images/
+          
+          # Add and commit changes
+          git add images/
+          git commit -m "${COMMIT_MSG}" || echo "No changes to commit"
+          
+          # Push to docs branch
+          git push origin docs
+          
+          # Return to the original branch
+          git checkout -
