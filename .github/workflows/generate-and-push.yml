@@ -8,7 +8,7 @@ permissions:
 on:
   push:
     branches:
-      - main  # Change this if your default branch has a different name
+      - master  # Change this if your default branch has a different name
     paths:
       - 'proto/**'  # Only run when proto files change
       - 'Makefile'  # Or when the Makefile changes
