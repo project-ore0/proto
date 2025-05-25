@@ -21,6 +21,10 @@ on:
         description: 'Reason for manual trigger'
         required: false
         default: 'Manual regeneration of protocol buffer files'
+      tag:
+        description: 'Tag for the generated files'
+        required: false
+        default: ''
 
 jobs:
   generate-and-push:
@@ -74,5 +78,24 @@ jobs:
       
       - name: Push
         run: |
+          # Determine the tag to use
+          if [ -n "${{ github.event.inputs.tag }}" ]; then
+            new_tag="${{ github.event.inputs.tag }}"
+          else
+            latest_tag=$(git tag --list "v*" --sort=-v:refname | head -n 1)
+            if [ -z "$latest_tag" ]; then
+              new_tag="v0.1.0"
+            else
+              major=$(echo $latest_tag | cut -d. -f1)
+              minor=$(echo $latest_tag | cut -d. -f2)
+              patch=$(echo $latest_tag | cut -d. -f3)
+              new_patch=$((patch + 1))
+              new_tag="${major}.${minor}.${new_patch}"
+            fi
+          fi
+
+          # Create a versioned branch and tag
           git subtree split --prefix=generated -b temp-generated-branch
-          git push --force origin temp-generated-branch:generated
+          git push --force origin temp-generated-branch:generated-${new_tag}
+          git tag $new_tag
+          git push origin $new_tag
