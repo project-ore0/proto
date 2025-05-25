@@ -82,3 +82,28 @@ message MotorStateResponse {
   repeated MotorStateMessage motors = 1;
   ErrorCode error = 2;
 }
+
+
+message Envelope {
+  oneof message {
+    JoinRequest join_request = 1;
+    JoinResponse join_response = 2;
+
+    SensorRequest sensor_request = 3;
+    SensorResponse sensor_response = 4;
+
+    AcquireRequest acquire_request = 5;
+    AcquireResponse acquire_response = 6;
+
+    ReleaseRequest release_request = 7;
+    ReleaseResponse release_response = 8;
+
+    CameraSnapRequest camera_snap_request = 9;
+    CameraSnapResponse camera_snap_response = 10;
+    CameraStateRequest camera_state_request = 11;
+    CameraStateResponse camera_state_response = 12;
+    
+    MotorStateRequest motor_state_request = 13;
+    MotorStateResponse motor_state_response = 14;
+  }
+}

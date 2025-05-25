@@ -156,3 +156,39 @@ message ReleaseBroadcast {
   string vehicle_id = 1;
   Player player = 2;
 }
+
+
+message Envelope {
+  oneof message {
+    JoinRequest join_request = 1;
+    JoinResponse join_response = 2;
+    JoinBroadcast join_broadcast = 3;
+    LeaveBroadcast leave_broadcast = 4;
+
+    ListPlayerRequest list_player_request = 5;
+    ListPlayerResponse list_player_response = 6;
+
+    ChatRequest chat_request = 7;
+    ChatResponse chat_response = 8;
+    ChatBroadcast chat_broadcast = 9;
+
+    ListVehiclesRequest list_vehicles_request = 10;
+    ListVehiclesResponse list_vehicles_response = 11;
+    VehicleConnectedBroadcast vehicle_connected_broadcast = 12;
+    VehicleDisconnectedBroadcast vehicle_disconnected_broadcast = 13;
+
+    AcquireRequest acquire_request = 14;
+    AcquireResponse acquire_response = 15;
+    AcquireBroadcast acquire_broadcast = 16;
+
+    MoveControlRequest move_control_request = 17;
+    MoveControlResponse move_control_response = 18;
+
+    VehicleCameraBroadcast vehicle_camera_broadcast = 19;
+    VehicleStateBroadcast vehicle_state_broadcast = 20;
+    
+    ReleaseRequest release_request = 21;
+    ReleaseResponse release_response = 22;
+    ReleaseBroadcast release_broadcast = 23;
+  }
+}
