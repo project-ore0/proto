@@ -1,9 +1,7 @@
 {
   "name": "ORE0 Proto Generator",
-  "initializeCommand": ".devcontainer/init.sh",
-  "dockerComposeFile": [
-    "docker-compose.yml"
-  ],
+  "initializeCommand": "sh .devcontainer/init.sh",
+  "dockerComposeFile": "docker-compose.yml",
   "service": "app",
   "workspaceFolder": "/workspace",
   "customizations": {

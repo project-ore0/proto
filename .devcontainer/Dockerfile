@@ -30,11 +30,11 @@ RUN npm install -g google-protobuf protoc-gen-ts
 
 # Create non-root user
 RUN addgroup -g $USER_GID $USERNAME \
-    && adduser -D -u $USER_UID -G $USERNAME $USERNAME
+    && adduser -D -u $USER_UID -G $USERNAME $USERNAME \
+    && mkdir -p /workspace \
+    && chown -R $USERNAME:$USERNAME /workspace
 
 # Set the working directory
 WORKDIR /workspace
 
 USER $USERNAME
-
-ENTRYPOINT [ "bash" ]
