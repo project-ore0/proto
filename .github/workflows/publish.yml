@@ -8,8 +8,9 @@ permissions:
 
 
 on:
-  tag:
-    types: [created]
+  create:
+    tags:
+      - 'v*.*.*'
   push:
     branches:
       - master
