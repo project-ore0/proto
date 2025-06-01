@@ -32,6 +32,11 @@ GENC_SRCS := $(patsubst %.proto,$(GENC_DIR)/%.pb.c,$(PROTO_BASENAMES))
 GENC_HDRS := $(patsubst %.proto,$(GENC_DIR)/%.pb.h,$(PROTO_BASENAMES))
 GENTS_SRCS := $(patsubst %.proto,$(GENTS_DIR)/%.ts,$(PROTO_BASENAMES))
 
+# Derive copied nanopb source files in GENC_DIR
+CSRC_COPIED := $(patsubst $(NANOPB_DIR)/%.c,$(GENC_DIR)/%.c,$(CSRC))
+CSRC_HDRS := $(patsubst %.c,%.h,$(CSRC))
+CSRC_HDRS_COPIED := $(patsubst $(NANOPB_DIR)/%.h,$(GENC_DIR)/%.h,$(CSRC_HDRS))
+
 # Check if required tools are available
 ifeq ($(shell which $(PROTOC) 2>/dev/null),)
 $(error Protocol buffer compiler (protoc) not found in PATH)
@@ -53,8 +58,15 @@ $(GENC_DIR) $(GENTS_DIR):
 $(GENC_DIR)/%.pb.c $(GENC_DIR)/%.pb.h: $(PROTO_DIR)/%.proto | $(GENC_DIR)
 	$(PROTOC) $(PROTOC_OPTS) --nanopb_out=$(GENC_DIR) --proto_path=$(PROTO_DIR) $<
 
+# Copy nanopb source files to GENC_DIR
+$(GENC_DIR)/%.c: $(NANOPB_DIR)/%.c | $(GENC_DIR)
+	cp $< $@
+
+$(GENC_DIR)/%.h: $(NANOPB_DIR)/%.h | $(GENC_DIR)
+	cp $< $@
+
 # C code generation target
-c: $(GENC_SRCS) $(GENC_HDRS)
+c: $(GENC_SRCS) $(GENC_HDRS) $(CSRC_COPIED) $(CSRC_HDRS_COPIED)
 	@echo "C code generation complete"
 
 # Generate TypeScript code from proto files
@@ -66,8 +78,14 @@ $(GENTS_DIR)/%.ts: $(PROTO_DIR)/%.proto | $(GENTS_DIR)
 	fi
 	$(PROTOC) $(PROTOC_OPTS) --plugin=protoc-gen-ts=$(PROTOC_GEN_TS) --ts_out=$(GENTS_DIR) --proto_path=$(PROTO_DIR) $<
 
+# Generate index.ts that re-exports all TypeScript files
+$(GENTS_DIR)/index.ts: $(GENTS_SRCS) | $(GENTS_DIR)
+	@echo "Generating TypeScript index file"
+	@echo "// Auto-generated index file that re-exports all generated TypeScript modules" > $@
+	@$(foreach file,$(GENTS_SRCS),echo "export * from './$(basename $(notdir $(file)).ts)';" >> $@;)
+
 # TypeScript code generation target
-ts: $(GENTS_SRCS)
+ts: $(GENTS_SRCS) $(GENTS_DIR)/index.ts
 	@echo "TypeScript code generation complete"
 
 # Clean generated files

@@ -1,0 +1,129 @@
+name: Publish TypeScript Package
+
+
+permissions:
+  contents: read
+  packages: write
+  id-token: write
+
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'proto/**'
+      - 'nanopb/**'
+      - 'Makefile'
+
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          submodules: recursive
+
+      - name: Generate
+        uses: devcontainers/ci@v0.3
+        with:
+          cacheFrom: ghcr.io/project-ore0/proto-ci
+          push: never
+          runCmd: make
+      
+      - name: Version
+        id: version
+        run: |
+          # Determine the tag to use
+          if [ -n "${{ github.event.inputs.version_bump }}" ]; then
+            version_bump="${{ github.event.inputs.version_bump }}"
+          else
+            version_bump="patch"
+          fi
+          # Get the latest tag (if any)
+          prev_tag='v0.0.1'
+          if git tag --list | grep -q '^v[0-9]\+\.[0-9]\+\.[0-9]\+$'; then
+            prev_tag=$(git tag --list | grep '^v[0-9]\+\.[0-9]\+\.[0-9]\+$' | sort -V | tail -n 1)
+          fi
+          # Strip the 'v' prefix
+          prev_version=${prev_tag#v}
+          # Increment the version based on the bump type
+          major=$(echo $prev_tag | cut -d. -f1)
+          minor=$(echo $prev_tag | cut -d. -f2)
+          patch=$(echo $prev_tag | cut -d. -f3)
+          case $version_bump in
+            major)
+              major=$((major + 1))
+              minor=0
+              patch=0
+              ;;
+            minor)
+              minor=$((minor + 1))
+              patch=0
+              ;;
+            patch)
+              patch=$((patch + 1))
+              ;;
+          esac
+          new_version="${major}.${minor}.${patch}"
+          new_tag="v${new_version}"
+          # Output
+          echo "prev_version=$prev_version" >> $GITHUB_OUTPUT
+          echo "prev_tag=$prev_tag" >> $GITHUB_OUTPUT
+          echo "new_version=$new_version" >> $GITHUB_OUTPUT
+          echo "new_tag=$new_tag" >> $GITHUB_OUTPUT
+
+      - name: Bundle C
+        run: |
+          tar -czf "generated/project-ore0-proto-c-${{ steps.version.outputs.new_tag }}.tgz" -C generated/c .
+      
+      - name: Bundle TypeScript
+        run: |
+          cd generated/ts
+          npx tsc --declaration --emitDeclarationOnly --outDir . --rootDir . --module commonjs --target es6 --lib es6 --strict --esModuleInterop --skipLibCheck
+          # Create package.json
+          cat > package.json << EOF
+          {
+            "name": "@project-ore0/proto-ts",
+            "version": "${{ steps.version.outputs.new_version || '0.0.1' }}",
+            "description": "Generated TypeScript types for Project Ore0 Protocol Buffers",
+            "main": "index.js",
+            "types": "index.d.ts",
+            "files": [
+              "*.ts",
+              "*.js",
+              "*.d.ts"
+            ],
+            "repository": {
+              "type": "git",
+              "url": "git+https://github.com/project-ore0/proto.git"
+            },
+            "dependencies": {
+              "google-protobuf": "^3.21.0"
+            },
+            "keywords": ["protobuf", "typescript", "types"],
+            "author": "Project Ore0",
+            "license": "MIT"
+          }
+          EOF
+          # Pack as tgz
+          npm pack --pack-destination ..
+      
+      - name: Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: project-ore0-proto-${{ steps.version.outputs.new_tag }}
+          path: |
+            generated/c/*
+            generated/ts/*
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
+        with:
+          files: |
+            generated/project-ore0-proto-c-${{ steps.version.outputs.new_tag }}.tgz
+            generated/project-ore0-proto-ts-${{ steps.version.outputs.new_tag }}.tgz
