@@ -11,14 +11,6 @@ on:
   create:
     tags:
       - 'v*.*.*'
-  push:
-    branches:
-      - master
-    paths:
-      - '.github/workflows/publish.yml'
-      - 'proto/**'
-      - 'nanopb/**'
-      - 'Makefile'
 
 jobs:
   build:
@@ -43,48 +35,19 @@ jobs:
       - name: Version
         id: version
         run: |
-          # Determine the tag to use
-          if [ -n "${{ github.event.inputs.version_bump }}" ]; then
-            version_bump="${{ github.event.inputs.version_bump }}"
+          # Determine version from tag
+          if [[ "${GITHUB_REF}" == refs/tags/v* ]]; then
+            # Extract version from tag
+            version="${GITHUB_REF#refs/tags/v}"
+            echo "version=${version}" >> $GITHUB_OUTPUT
           else
-            version_bump="patch"
+            echo 'No tag found to determine version' >&2
+            exit 1
           fi
-          # Get the latest tag (if any)
-          prev_tag='v0.0.1'
-          if git tag --list | grep -q '^v[0-9]\+\.[0-9]\+\.[0-9]\+$'; then
-            prev_tag=$(git tag --list | grep '^v[0-9]\+\.[0-9]\+\.[0-9]\+$' | sort -V | tail -n 1)
-          fi
-          # Strip the 'v' prefix
-          prev_version=${prev_tag#v}
-          # Increment the version based on the bump type
-          major=$(echo $prev_version | cut -d. -f1)
-          minor=$(echo $prev_version | cut -d. -f2)
-          patch=$(echo $prev_version | cut -d. -f3)
-          case $version_bump in
-            major)
-              major=$((major + 1))
-              minor=0
-              patch=0
-              ;;
-            minor)
-              minor=$((minor + 1))
-              patch=0
-              ;;
-            patch)
-              patch=$((patch + 1))
-              ;;
-          esac
-          new_version="${major}.${minor}.${patch}"
-          new_tag="v${new_version}"
-          # Output
-          echo "prev_version=$prev_version" >> $GITHUB_OUTPUT
-          echo "prev_tag=$prev_tag" >> $GITHUB_OUTPUT
-          echo "new_version=$new_version" >> $GITHUB_OUTPUT
-          echo "new_tag=$new_tag" >> $GITHUB_OUTPUT
 
       - name: Bundle C
         run: |
-          tar -czf "generated/project-ore0-proto-c-${{ steps.version.outputs.new_version }}.tgz" -C generated/c .
+          tar -czf "generated/project-ore0-proto-c-${{ steps.version.outputs.version }}.tgz" -C generated/c .
       
       - name: Bundle TypeScript
         run: |
@@ -93,7 +56,7 @@ jobs:
           cat > package.json << EOF
           {
             "name": "@project-ore0/proto-ts",
-            "version": "${{ steps.version.outputs.new_version || '0.0.1' }}",
+            "version": "${{ steps.version.outputs.version }}",
             "description": "Generated TypeScript types for Project Ore0 Protocol Buffers",
             "main": "index.ts",
             "types": "index.ts",
@@ -114,7 +77,7 @@ jobs:
       - name: Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: project-ore0-proto-${{ steps.version.outputs.new_version }}
+          name: project-ore0-proto-${{ steps.version.outputs.version }}
           path: |
             generated/c/*
             generated/ts/*
@@ -124,5 +87,5 @@ jobs:
         if: github.ref_type == 'tag'
         with:
           files: |
-            generated/project-ore0-proto-c-${{ steps.version.outputs.new_version }}.tgz
-            generated/project-ore0-proto-ts-${{ steps.version.outputs.new_version }}.tgz
+            generated/project-ore0-proto-c-${{ steps.version.outputs.version }}.tgz
+            generated/project-ore0-proto-ts-${{ steps.version.outputs.version }}.tgz
