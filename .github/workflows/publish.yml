@@ -54,9 +54,9 @@ jobs:
           # Strip the 'v' prefix
           prev_version=${prev_tag#v}
           # Increment the version based on the bump type
-          major=$(echo $prev_tag | cut -d. -f1)
-          minor=$(echo $prev_tag | cut -d. -f2)
-          patch=$(echo $prev_tag | cut -d. -f3)
+          major=$(echo $prev_version | cut -d. -f1)
+          minor=$(echo $prev_version | cut -d. -f2)
+          patch=$(echo $prev_version | cut -d. -f3)
           case $version_bump in
             major)
               major=$((major + 1))
