@@ -84,7 +84,7 @@ jobs:
 
       - name: Bundle C
         run: |
-          tar -czf "generated/project-ore0-proto-c-${{ steps.version.outputs.new_tag }}.tgz" -C generated/c .
+          tar -czf "generated/project-ore0-proto-c-${{ steps.version.outputs.new_version }}.tgz" -C generated/c .
       
       - name: Bundle TypeScript
         run: |
@@ -114,7 +114,7 @@ jobs:
       - name: Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: project-ore0-proto-${{ steps.version.outputs.new_tag }}
+          name: project-ore0-proto-${{ steps.version.outputs.new_version }}
           path: |
             generated/c/*
             generated/ts/*
@@ -124,5 +124,5 @@ jobs:
         if: github.ref_type == 'tag'
         with:
           files: |
-            generated/project-ore0-proto-c-${{ steps.version.outputs.new_tag }}.tgz
-            generated/project-ore0-proto-ts-${{ steps.version.outputs.new_tag }}.tgz
+            generated/project-ore0-proto-c-${{ steps.version.outputs.new_version }}.tgz
+            generated/project-ore0-proto-ts-${{ steps.version.outputs.new_version }}.tgz
