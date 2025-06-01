@@ -82,6 +82,7 @@ jobs:
       
       - name: Bundle TypeScript
         run: |
+          cd generated/ts
           # Create package.json
           cat > package.json << EOF
           {
