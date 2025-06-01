@@ -82,29 +82,21 @@ jobs:
       
       - name: Bundle TypeScript
         run: |
-          cd generated/ts
-          npx tsc --declaration --emitDeclarationOnly --outDir . --rootDir . --module commonjs --target es6 --lib es6 --strict --esModuleInterop --skipLibCheck
           # Create package.json
           cat > package.json << EOF
           {
             "name": "@project-ore0/proto-ts",
             "version": "${{ steps.version.outputs.new_version || '0.0.1' }}",
             "description": "Generated TypeScript types for Project Ore0 Protocol Buffers",
-            "main": "index.js",
-            "types": "index.d.ts",
-            "files": [
-              "*.ts",
-              "*.js",
-              "*.d.ts"
-            ],
+            "main": "index.ts",
+            "types": "index.ts",
             "repository": {
               "type": "git",
               "url": "git+https://github.com/project-ore0/proto.git"
             },
             "dependencies": {
-              "google-protobuf": "^3.21.0"
+              "google-protobuf": "^3.21.4"
             },
-            "keywords": ["protobuf", "typescript", "types"],
             "author": "Project Ore0",
             "license": "MIT"
           }
