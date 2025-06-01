@@ -12,10 +12,10 @@ on:
     branches:
       - master
     paths:
+      - '.github/workflows/publish.yml'
       - 'proto/**'
       - 'nanopb/**'
       - 'Makefile'
-
 
 jobs:
   build:
